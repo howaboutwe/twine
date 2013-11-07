@@ -126,10 +126,15 @@ module Twine
                   value.gsub!('\'', '\\\\\'')
                   value.gsub!('"', '\\\\"')
                   #  2) HTML escape the string
-                  value = CGI.escapeHTML(value)
+                  # value = CGI.escapeHTML(value)
                   #  3) fix substitutions (e.g. %s/%@)
                   value = androidify_substitutions(value)
-
+                  #  4) fix escaped quotes (from step 1) in a tags (this is a loop, because the regexp replaces them pair by pair)
+                  oldvalue = nil
+                  while not value.eql? oldvalue
+                    oldvalue = value
+                    value.gsub!(%r{(<a[^>]*?)\\"([^>]*?)\\"([^>]*?>)}, '\1"\2"\3')
+                  end
                   comment = row.comment
                   if comment
                     comment = comment.gsub('--', '—')
